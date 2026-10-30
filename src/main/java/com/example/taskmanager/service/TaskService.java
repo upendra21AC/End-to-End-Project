@@ -1,61 +1,55 @@
+
 package com.example.taskmanager.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.model.Task;
+import com.example.taskmanager.repository.TaskRepository;
 
 @Service
 public class TaskService {
-	
-    private final Map<Long, Task> tasks = new HashMap<>();
 
-    private Long nextId = 1L;
+    private final TaskRepository taskRepository;
+
+    public TaskService(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
 
     // Create task
     public Task createTask(Task task) {
-
-        task.setId(nextId++);
-
-        tasks.put(task.getId(), task);
-
-        return task;
+        return taskRepository.save(task);
     }
 
     // Get all tasks
     public List<Task> getAllTasks() {
-
-        return new ArrayList<>(tasks.values());
+        return taskRepository.findAll();
     }
 
     // Get task by ID
     public Task getTaskById(Long id) {
-
-        return tasks.get(id);
+        return taskRepository.findById(id).orElse(null);
     }
 
     // Update task
     public Task updateTask(Long id, Task updatedTask) {
 
-        if (!tasks.containsKey(id)) {
+        if (!taskRepository.existsById(id)) {
             return null;
         }
 
         updatedTask.setId(id);
-
-        tasks.put(id, updatedTask);
-
-        return updatedTask;
+        return taskRepository.save(updatedTask);
     }
 
     // Delete task
     public boolean deleteTask(Long id) {
+        if (!taskRepository.existsById(id)) {
+            return false;
+        }
 
-        return tasks.remove(id) != null;
+        taskRepository.deleteById(id);
+        return true;
     }
-
 }
